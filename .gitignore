@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# IDE stuff
+.DS_Store
+.vscode/*
+!.vscode/launch.json
+
 # C extensions
 *.so
 

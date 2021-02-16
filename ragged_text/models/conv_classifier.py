@@ -1,0 +1,58 @@
+import tensorflow as tf
+
+from ragged_text.layers.word_embed import WordEmbedding
+from ragged_text.layers.conv import ConvNgram
+from ragged_text import map_ragged_time_sequences
+
+
+class ConvGramClassifier(tf.keras.Model):
+
+    def __init__(self, vocab: list, embedding_size: int, conv_filter_size: int, ngrams: list, pool_size: int,
+                 n_classes: int, multi_label=True):
+        super().__init__()
+
+        if n_classes <= 2:
+            n_classes = 1
+            self.activation = tf.nn.sigmoid
+        else:
+            self.activation = tf.nn.sigmoid if multi_label else tf.nn.softmax
+
+        self.embed = WordEmbedding(vocab=vocab, embedding_size=embedding_size)
+        self.ngram_layers = [
+            ConvNgram(ngram_size=ng, output_size=conv_filter_size, pool_size=pool_size, embedding_size=embedding_size)
+            for ng in ngrams
+        ]
+        self.svm = tf.keras.layers.Dense(n_classes, name="LinearSvm")
+        self.svm.build([None, conv_filter_size * len(ngrams)])
+
+        self.platt_dense = tf.keras.layers.Dense(n_classes, activation=self.activation, name="PlattPosterior")
+        self.platt_dense.build([None, n_classes])
+
+    def feature_forward(self, tokens):
+        tokens = self.embed(tokens)
+        x = []
+        for feature_layer in self.ngram_layers:
+            x_ = map_ragged_time_sequences(feature_layer, tokens)
+
+            # add n-grams as vectors, then L2-normalize
+            x_ = tf.reduce_sum(x_, axis=1)
+            # x.append(tf.linalg.l2_normalize(x_, axis=1))
+            x.append(x_)
+        x = tf.concat(x, axis=-1)
+        return tf.linalg.l2_normalize(x, axis=1)
+
+    def __call__(self, tokens, svm_output=False):
+        with tf.name_scope("ConvGramClassifier"):
+            x = self.feature_forward(tokens)
+            x = self.svm(x)
+            if svm_output:
+                return x
+            return self.platt_dense(x)
+
+    @property
+    def svm_variables(self):
+        return [v for v in self.trainable_variables if 'PlattPosterior' not in v.name]
+
+    @property
+    def platt_variables(self):
+        return self.platt_dense.trainable_variables
