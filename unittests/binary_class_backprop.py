@@ -1,3 +1,4 @@
+import sys
 from collections import Counter
 import tensorflow as tf
 from nltk.corpus import stopwords
@@ -25,8 +26,6 @@ model = ConvGramClassifier(
     n_classes=2,
     multi_label=False
 )
-
-# svm_platt_binary_train_step(model, optimizer, tokens=tf.ragged.constant(x_train[:16]), labels=y_train[:16])
 svm_loss = tf.keras.metrics.Mean('svm-train-loss', dtype=tf.float32)
 platt_loss = tf.keras.metrics.Mean('platt-train-loss', dtype=tf.float32)
 
@@ -36,6 +35,7 @@ platt_loss = tf.keras.metrics.Mean('platt-train-loss', dtype=tf.float32)
     tf.TensorSpec(shape=[None], dtype=tf.float32)
 ])
 def train_step(tokens, labels):
+    tf.print(tf.range(0, limit=10), output_stream=sys.stderr)
     svm, platt = svm_platt_binary_train_step(model, optimizer, tokens=tokens, labels=labels)
     svm_loss(svm)
     platt_loss(platt)
