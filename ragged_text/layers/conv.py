@@ -1,5 +1,4 @@
 import tensorflow as tf
-import sys
 
 
 class ConvNgram(tf.keras.layers.Layer):
@@ -21,7 +20,6 @@ class ConvNgram(tf.keras.layers.Layer):
         self.pool.build([None, output_size])
 
     def __call__(self, embedded_tokens):
-        tf.print(embedded_tokens, output_stream=sys.stderr)
         with tf.name_scope(self.scope):
             x = self.ngram(embedded_tokens)
             x = self.pool(x)
