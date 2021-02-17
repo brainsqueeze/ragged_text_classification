@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.python.eager.context import scope_name
 
 from ragged_text.layers.word_embed import WordEmbedding
 from ragged_text.layers.conv import ConvNgram
@@ -22,11 +23,14 @@ class ConvGramClassifier(tf.keras.Model):
             ConvNgram(ngram_size=ng, output_size=conv_filter_size, pool_size=pool_size, embedding_size=embedding_size)
             for ng in ngrams
         ]
-        self.svm = tf.keras.layers.Dense(n_classes, name="LinearSvm")
-        self.svm.build([None, conv_filter_size * len(ngrams)])
 
-        self.platt_dense = tf.keras.layers.Dense(n_classes, activation=self.activation, name="PlattPosterior")
-        self.platt_dense.build([None, n_classes])
+        with tf.name_scope("LinearSVC"):
+            self.svm = tf.keras.layers.Dense(n_classes, name="LinearSvm")
+            self.svm.build([None, conv_filter_size * len(ngrams)])
+
+        with tf.name_scope("PlattPosterior"):
+            self.platt_dense = tf.keras.layers.Dense(n_classes, activation=self.activation)
+            self.platt_dense.build([None, n_classes])
 
     def feature_forward(self, tokens):
         tokens = self.embed(tokens)
@@ -34,9 +38,8 @@ class ConvGramClassifier(tf.keras.Model):
         for feature_layer in self.ngram_layers:
             x_ = map_ragged_time_sequences(feature_layer, tokens)
 
-            # add n-grams as vectors, then L2-normalize
+            # add n-grams as vectors
             x_ = tf.reduce_sum(x_, axis=1)
-            # x.append(tf.linalg.l2_normalize(x_, axis=1))
             x.append(x_)
         x = tf.concat(x, axis=-1)
         return tf.linalg.l2_normalize(x, axis=1)
