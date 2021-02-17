@@ -41,7 +41,7 @@ class ConvGramClassifier(tf.keras.Model):
         x = tf.concat(x, axis=-1)
         return tf.linalg.l2_normalize(x, axis=1)
 
-    def __call__(self, tokens, svm_output=False):
+    def call(self, tokens, svm_output=False):
         with tf.name_scope("ConvGramClassifier"):
             x = self.feature_forward(tokens)
             x = self.svm(x)
