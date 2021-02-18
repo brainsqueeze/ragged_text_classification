@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tensorflow.python.eager.context import scope_name
 
 from ragged_text.layers.word_embed import WordEmbedding
 from ragged_text.layers.conv import ConvNgram
@@ -12,9 +11,12 @@ class ConvGramClassifier(tf.keras.Model):
                  n_classes: int, multi_label=True):
         super().__init__()
 
+        self.multi_label = multi_label
+        self.n_classes = n_classes
         if n_classes <= 2:
-            n_classes = 1
+            self.n_classes = 1
             self.activation = tf.nn.sigmoid
+            self.multi_label = False
         else:
             self.activation = tf.nn.sigmoid if multi_label else tf.nn.softmax
 
@@ -25,12 +27,12 @@ class ConvGramClassifier(tf.keras.Model):
         ]
 
         with tf.name_scope("LinearSVC"):
-            self.svm = tf.keras.layers.Dense(n_classes, name="LinearSvm")
+            self.svm = tf.keras.layers.Dense(self.n_classes, name="LinearSvm")
             self.svm.build([None, conv_filter_size * len(ngrams)])
 
         with tf.name_scope("PlattPosterior"):
-            self.platt_dense = tf.keras.layers.Dense(n_classes, activation=self.activation)
-            self.platt_dense.build([None, n_classes])
+            self.platt_dense = tf.keras.layers.Dense(self.n_classes, activation=self.activation)
+            self.platt_dense.build([None, self.n_classes])
 
     def feature_forward(self, tokens):
         tokens = self.embed(tokens)
