@@ -1,9 +1,27 @@
 import tensorflow as tf
 
 
+class PointwiseLinear(tf.keras.layers.Layer):
+
+    def __init__(self, units: int, activation):
+        super().__init__()
+
+        self.activation = activation
+        self.kernel = tf.Variable(
+            tf.random.truncated_normal((units,), mean=-0.01, stddev=0.01),
+            name="kernel",
+            dtype=tf.float32,
+            trainable=True
+        )
+        self.bias = tf.Variable(tf.zeros(shape=(units,)), name="bias", dtype=tf.float32, trainable=True)
+
+    def __call__(self, X):
+        return self.activation(X * self.kernel + self.bias)
+
+
 class LinearSvmPlatt(tf.keras.layers.Layer):
 
-    def __init__(self, n_features: int, n_classes: int, multi_label=True):
+    def __init__(self, n_features: int, n_classes: int, multi_label=True, lite=False):
         super().__init__()
 
         if not all([isinstance(n_classes, int), n_classes >= 1]):
@@ -23,7 +41,11 @@ class LinearSvmPlatt(tf.keras.layers.Layer):
             self.svm = tf.keras.layers.Dense(units=self.n_classes)
             self.svm.build([None, n_features])
         with tf.name_scope('PlattPosterior'):
-            self.platt = tf.keras.layers.Dense(units=self.n_classes, activation=self.activation)
+            params = dict(units=self.n_classes, activation=self.activation)
+            if lite:
+                self.platt = PointwiseLinear(**params)
+            else:
+                self.platt = tf.keras.layers.Dense(**params)
             self.platt.build([self.n_classes, self.n_classes])
 
     def __call__(self, X, svm_output=False, training=False):

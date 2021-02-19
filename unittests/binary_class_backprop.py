@@ -1,7 +1,7 @@
 from collections import Counter
 import tensorflow as tf
 from nltk.corpus import stopwords
-from ragged_text.models.conv_classifier import ConvGramClassifier
+from ragged_text.models.linear_classifiers import ConvGramClassifier
 from ragged_text.train import svm_platt_train_step
 
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.imdb.load_data()
@@ -23,7 +23,8 @@ model = ConvGramClassifier(
     ngrams=[1, 2, 3],
     pool_size=3,
     n_classes=2,
-    multi_label=False
+    multi_label=False,
+    lite=False
 )
 svm_loss = tf.keras.metrics.Mean('svm-train-loss', dtype=tf.float32)
 platt_loss = tf.keras.metrics.Mean('platt-train-loss', dtype=tf.float32)
