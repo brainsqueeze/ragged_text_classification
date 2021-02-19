@@ -12,3 +12,4 @@ dependencies:
   - python=3.8
   - pip:
     - tensorflow>=2.4.1
+    - git+https://github.com/brainsqueeze/text2vec.git

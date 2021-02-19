@@ -2,7 +2,7 @@ from collections import Counter
 import tensorflow as tf
 from nltk.corpus import stopwords
 from ragged_text.models.conv_classifier import ConvGramClassifier
-from ragged_text.train import svm_platt_binary_train_step
+from ragged_text.train import svm_platt_train_step
 
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.imdb.load_data()
 token_lookup = tf.keras.datasets.imdb.get_word_index()
@@ -34,7 +34,7 @@ platt_loss = tf.keras.metrics.Mean('platt-train-loss', dtype=tf.float32)
     tf.TensorSpec(shape=[None], dtype=tf.float32)
 ])
 def train_step(tokens, labels):
-    svm, platt = svm_platt_binary_train_step(model, optimizer, tokens=tokens, labels=labels)
+    svm, platt = svm_platt_train_step(model, optimizer, inputs=tokens, labels=labels)
     svm_loss(svm)
     platt_loss(platt)
 
