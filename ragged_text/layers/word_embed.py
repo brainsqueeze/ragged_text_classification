@@ -2,6 +2,16 @@ import tensorflow as tf
 
 
 class WordEmbedding(tf.keras.layers.Layer):
+    """Standard word embedding layer, with forward passes specific to `tf.RaggedTensor`
+    inputs.
+
+    Parameters
+    ----------
+    vocab : list
+        Token list
+    embedding_size : int
+        Token embedding dimensionality
+    """
 
     def __init__(self, vocab: list, embedding_size: int):
         super().__init__()

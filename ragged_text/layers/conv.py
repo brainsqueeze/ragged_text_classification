@@ -1,8 +1,20 @@
-from os import name
 import tensorflow as tf
 
 
 class ConvNgram(tf.keras.layers.Layer):
+    """Conv1D + MaxPool1D layer
+
+    Parameters
+    ----------
+    ngram_size : int
+        Window size for the convolution filter (how many time steps to convolve over)
+    embedding_size : int
+        Token embedding dimensionality
+    output_size : int
+        Convolution output dimensionality
+    pool_size : int
+        Window size for the maxpool layer (how many n-grams to consider)
+    """
 
     def __init__(self, ngram_size: int, embedding_size: int, output_size: int, pool_size: int):
         super().__init__(name=f"Conv1D-{ngram_size}")

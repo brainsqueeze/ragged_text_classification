@@ -1,5 +1,9 @@
 name: ragged-text-dev
+channels:
+  - conda-forge
 dependencies:
+  - cudatoolkit=11.0.3
+  - cudnn=8.0.5.39
   - nltk
   - numpy
   - pip

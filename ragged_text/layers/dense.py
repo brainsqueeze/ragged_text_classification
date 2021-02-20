@@ -2,6 +2,15 @@ import tensorflow as tf
 
 
 class PointwiseLinear(tf.keras.layers.Layer):
+    """Calibrated posterior probabilities, ignoring off-diagonal mixing weights.
+
+    Parameters
+    ----------
+    units : int
+        Output dimensions
+    activation : Tensorflow activation function
+        Activation function, typically sigmoid or softmax functions
+    """
 
     def __init__(self, units: int, activation):
         super().__init__()
@@ -20,6 +29,24 @@ class PointwiseLinear(tf.keras.layers.Layer):
 
 
 class LinearSvmPlatt(tf.keras.layers.Layer):
+    """Linear SVM + calibrated posterior probabilities via Platt scaling.
+
+    Parameters
+    ----------
+    n_features : int
+        Input dimensionality
+    n_classes : int
+        Number of class labels
+    multi_label : bool, optional
+        Set to True to perform multi-label classification, will be overriden if n_classes <= 2, by default True
+    lite : bool, optional
+        Set to True to use the `PointwiseLinear` layer and ignore off-diagonal calibration weights, by default False
+
+    Raises
+    ------
+    TypeError
+        Raised for invalid `n_classes` values; must be an integer >= 1
+    """
 
     def __init__(self, n_features: int, n_classes: int, multi_label=True, lite=False):
         super().__init__()
