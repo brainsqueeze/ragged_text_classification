@@ -17,6 +17,7 @@ class ClassifierModel(ConvGramClassifier):
         self.compiled_metrics.update_state(labels, y_hat)
         return {'svm_loss': svm, 'platt_loss': platt, **{m.name: m.result() for m in self.metrics}}
 
+
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.imdb.load_data()
 token_lookup = tf.keras.datasets.imdb.get_word_index()
 inv_token_lookup = {v: k for k, v in token_lookup.items()}
@@ -40,7 +41,10 @@ model = ClassifierModel(
 )
 model.compile(
     optimizer=tf.keras.optimizers.Adam(0.01),
-    metrics=[tf.keras.metrics.Precision(), tf.keras.metrics.Recall()]
+    metrics=[
+        tf.keras.metrics.Precision(),
+        tf.keras.metrics.Recall()
+    ]
 )
 model.fit(
     x=np.array([' '.join(d) for d in x_train]),
