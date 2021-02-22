@@ -7,7 +7,7 @@ def map_ragged_time_sequences(op, rt: tf.RaggedTensor, **kwargs) -> tf.RaggedTen
     Parameters
     ----------
     op : Tensorflow callable
-        
+  
     rt : tf.RaggedTensor
 
     Returns

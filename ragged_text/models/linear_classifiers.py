@@ -74,7 +74,7 @@ class ConvGramClassifier(tf.keras.Model):
         x = tf.concat(x, axis=-1)
         return tf.linalg.l2_normalize(x, axis=1)
 
-    def call(self, documents, svm_output=False):
+    def call(self, documents, svm_output=False, training=False, **kwargs):
         with tf.name_scope("ConvGramClassifier"):
             x = self.feature_forward(documents)
             return self.classifier(x, svm_output=svm_output)
@@ -147,7 +147,7 @@ class ContextClassifier(tf.keras.Model):
                 lite=lite
             )
 
-    def __call__(self, documents, svm_output=False, training=False):
+    def call(self, documents, svm_output=False, training=False, **kwargs):
         X = tf.ragged.map_flat_values(self.embedder, documents, training=training)
         X = tf.reduce_sum(X, axis=1)  # add up context vectors for each document
         X = tf.linalg.l2_normalize(X, axis=1)  # get L2 normalized document vectors
