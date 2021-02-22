@@ -63,7 +63,7 @@ vocab = Counter([tok for doc in x_train for tok in doc])
 
 Once the data is pre-processed the model can be initialized with the top 100k vocab terms
 ```python
-# definte the model
+# define the model
 model = ClassifierModel(
     vocab=[tok for tok, _ in vocab.most_common(100000)],
     embedding_size=64,
