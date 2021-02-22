@@ -25,7 +25,8 @@ class PointwiseLinear(tf.keras.layers.Layer):
         self.bias = tf.Variable(tf.zeros(shape=(units,)), name="bias", dtype=tf.float32, trainable=True)
 
     def __call__(self, X):
-        return self.activation(X * self.kernel + self.bias)
+        with tf.name_scope("PointwiseLinear"):
+            return self.activation(X * self.kernel + self.bias)
 
 
 class LinearSvmPlatt(tf.keras.layers.Layer):
@@ -76,7 +77,8 @@ class LinearSvmPlatt(tf.keras.layers.Layer):
             self.platt.build([self.n_classes, self.n_classes])
 
     def __call__(self, X, svm_output=False, training=False):
-        X = self.svm(X)
-        if svm_output:
-            return X
-        return self.platt(X)
+        with tf.name_scope("LinearSvmPlatt"):
+            X = self.svm(X)
+            if svm_output:
+                return X
+            return self.platt(X)

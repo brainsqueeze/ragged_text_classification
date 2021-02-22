@@ -33,5 +33,6 @@ class WordEmbedding(tf.keras.layers.Layer):
             )
 
     def __call__(self, tokens):
-        tokens = tf.ragged.map_flat_values(self.table.lookup, tokens)
-        return tf.ragged.map_flat_values(tf.nn.embedding_lookup, self.embeddings, tokens)
+        with tf.name_scope("WordEmbedding"):
+            tokens = tf.ragged.map_flat_values(self.table.lookup, tokens)
+            return tf.ragged.map_flat_values(tf.nn.embedding_lookup, self.embeddings, tokens)

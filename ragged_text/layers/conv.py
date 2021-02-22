@@ -19,7 +19,8 @@ class ConvNgram(tf.keras.layers.Layer):
     def __init__(self, ngram_size: int, embedding_size: int, output_size: int, pool_size: int):
         super().__init__(name=f"Conv1D-{ngram_size}")
 
-        with tf.name_scope(f"ConvNgram-{ngram_size}-gram"):
+        self.scope = f"ConvNgram-{ngram_size}-gram"
+        with tf.name_scope(self.scope):
             self.ngram = tf.keras.layers.Conv1D(
                 filters=output_size,
                 kernel_size=ngram_size,
@@ -33,6 +34,7 @@ class ConvNgram(tf.keras.layers.Layer):
             self.pool.build([None, output_size])
 
     def __call__(self, embedded_tokens):
-        x = self.ngram(embedded_tokens)
-        x = self.pool(x)
-        return x
+        with tf.name_scope(self.scope):
+            x = self.ngram(embedded_tokens)
+            x = self.pool(x)
+            return x

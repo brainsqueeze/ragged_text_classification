@@ -42,12 +42,13 @@ class Text2VecAttentionEmbed(tf.keras.layers.Layer):
             )
 
     def __call__(self, sentences, training=False):
-        tokens = self.tokenizer(sentences)
-        sequences, mask, _ = self.word_embedder(tokens)
+        with tf.name_scope("Text2VecAttentionEmbed"):
+            tokens = self.tokenizer(sentences)
+            sequences, mask, _ = self.word_embedder(tokens)
 
-        if training:
-            _, X = self.encoder(sequences, mask, training=training)
-        else:
-            X = self.encoder(sequences, mask, training=training)
+            if training:
+                _, X = self.encoder(sequences, mask, training=training)
+            else:
+                X = self.encoder(sequences, mask, training=training)
 
-        return X
+            return X
