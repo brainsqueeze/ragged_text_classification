@@ -31,7 +31,7 @@ class Install(install):
 
 setup(
     name="ragged_text",
-    version="0.1.1",
+    version="0.1.2",
     description="Components for text classification with Tensorflow",
     author="Dave Hollander",
     author_url="https://github.com/brainsqueeze",
