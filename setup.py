@@ -31,7 +31,7 @@ class Install(install):
 
 setup(
     name="ragged_text",
-    version="0.1.0",
+    version="0.1.1",
     description="Components for text classification with Tensorflow",
     author="Dave Hollander",
     author_url="https://github.com/brainsqueeze",
@@ -41,7 +41,7 @@ setup(
         "nltk",
         "numpy",
         "tensorflow>=2.4.1",
-        "git+https://github.com/brainsqueeze/text2vec.git"
+        "text2vec @ git+https://github.com/brainsqueeze/text2vec@master#egg=text2vec"
     ],
     packages=find_packages(exclude=["bin"]),
     cmdclass={"install": Install}
