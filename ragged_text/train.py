@@ -74,4 +74,4 @@ def svm_platt_train_step(model: tf.keras.Model, opt: tf.keras.optimizers.Optimiz
         platt_loss = tf.reduce_mean(platt_loss)
     gradients = tape.gradient(platt_loss, model.platt_variables)
     opt.apply_gradients(zip(gradients, model.platt_variables))
-    return svm_loss, platt_loss
+    return svm_loss, platt_loss, y_hat

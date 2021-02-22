@@ -17,14 +17,16 @@ class Text2VecAttentionEmbed(tf.keras.layers.Layer):
         Keep probability (dropout) for the input layer, by default 1.0
     hidden_keep_prob : float, optional
         Keep probability (dropout) for the hidden layers, by default 1.0
+    sep : str, optional
+        Token separator to split on, by default ' '
     """
 
     def __init__(self, tokens: dict, embedding_size=128, max_sequence_len=512,
-                 input_keep_prob=1.0, hidden_keep_prob=1.0):
+                 input_keep_prob=1.0, hidden_keep_prob=1.0, sep=' '):
         super().__init__()
 
         with tf.name_scope('text2vec'):
-            self.tokenizer = t2v.models.Tokenizer()
+            self.tokenizer = t2v.models.Tokenizer(sep)
             self.word_embedder = t2v.models.TextInput(
                 token_hash=tokens,
                 embedding_size=embedding_size,
@@ -47,5 +49,5 @@ class Text2VecAttentionEmbed(tf.keras.layers.Layer):
             _, X = self.encoder(sequences, mask, training=training)
         else:
             X = self.encoder(sequences, mask, training=training)
- 
+
         return X

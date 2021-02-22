@@ -31,11 +31,12 @@ platt_loss = tf.keras.metrics.Mean('platt-train-loss', dtype=tf.float32)
 
 
 @tf.function(input_signature=[
-    tf.RaggedTensorSpec(ragged_rank=1, dtype=tf.string),
+    # tf.RaggedTensorSpec(ragged_rank=1, dtype=tf.string),
+    tf.TensorSpec(shape=[None], dtype=tf.string),
     tf.TensorSpec(shape=[None], dtype=tf.float32)
 ])
-def train_step(tokens, labels):
-    svm, platt = svm_platt_train_step(model, optimizer, inputs=tokens, labels=labels)
+def train_step(documents, labels):
+    svm, platt = svm_platt_train_step(model, optimizer, inputs=documents, labels=labels)
     svm_loss(svm)
     platt_loss(platt)
 
@@ -45,7 +46,10 @@ for epoch in range(10):
     for i, b in enumerate(range(0, len(x_train) + batch_size, batch_size), start=1):
         if y_train[b: b + batch_size].shape[0] == 0:
             continue
-        train_step(tokens=tf.ragged.constant(x_train[b: b + batch_size]), labels=y_train[b: b + batch_size])
+        train_step(
+            documents=tf.ragged.constant([' '.join(d) for d in x_train[b: b + batch_size]]),
+            labels=y_train[b: b + batch_size]
+        )
 
         if i % 10 == 0:
             print(f"\tStep {i} --- SVM Loss: {svm_loss.result()} Platt posterior Loss: {platt_loss.result()}")

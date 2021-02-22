@@ -29,6 +29,13 @@
             "request": "launch",
             "module": "unittests.binary_attention_backprop",
             "justMyCode": false
+        },
+        {
+            "name": "Unittest: Fit test",
+            "type": "python",
+            "request": "launch",
+            "module": "unittests.fit_test",
+            "justMyCode": false
         }
     ]
 }

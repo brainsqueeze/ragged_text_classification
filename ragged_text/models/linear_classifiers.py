@@ -1,4 +1,5 @@
 import tensorflow as tf
+from text2vec.models import Tokenizer
 
 from ragged_text.layers.dense import LinearSvmPlatt
 from ragged_text.layers.word_embed import WordEmbedding
@@ -32,13 +33,16 @@ class ConvGramClassifier(tf.keras.Model):
     lite : bool, optional
         Set to True to use a point-wise dense layer for Platt probability calibrartion. This is useful when
         `n_classes` is large, by default False
+    sep : str, optional
+        Token separator to split on, by default ' '
     """
 
     def __init__(self, vocab: list, embedding_size: int, conv_filter_size: int, ngrams: list, pool_size: int,
-                 n_classes: int, multi_label=False, lite=False):
+                 n_classes: int, multi_label=False, lite=False, sep=' '):
         super().__init__()
 
         with tf.name_scope('ConvFeatures'):
+            self.tok = Tokenizer(sep)
             self.embed = WordEmbedding(vocab=vocab, embedding_size=embedding_size)
             self.ngram_layers = [
                 ConvNgram(
@@ -58,8 +62,8 @@ class ConvGramClassifier(tf.keras.Model):
                 lite=lite
             )
 
-    def feature_forward(self, tokens):
-        tokens = self.embed(tokens)
+    def feature_forward(self, documents):
+        tokens = self.embed(self.tok(documents))
         x = []
         for feature_layer in self.ngram_layers:
             x_ = map_ragged_time_sequences(feature_layer, tokens)
@@ -70,9 +74,9 @@ class ConvGramClassifier(tf.keras.Model):
         x = tf.concat(x, axis=-1)
         return tf.linalg.l2_normalize(x, axis=1)
 
-    def call(self, tokens, svm_output=False):
+    def call(self, documents, svm_output=False):
         with tf.name_scope("ConvGramClassifier"):
-            x = self.feature_forward(tokens)
+            x = self.feature_forward(documents)
             return self.classifier(x, svm_output=svm_output)
 
     @property
@@ -118,13 +122,16 @@ class ContextClassifier(tf.keras.Model):
     lite : bool, optional
         Set to True to use a point-wise dense layer for Platt probability calibrartion. This is useful when
         `n_classes` is large, by default False
+    sep : str, optional
+        Token separator to split on, by default ' '
     """
 
     def __init__(self, vocab: list, embedding_size: int, n_classes: int, max_sequence_len=512,
-                 input_keep_prob=1.0, hidden_keep_prob=1.0, multi_label=True, lite=False):
+                 input_keep_prob=1.0, hidden_keep_prob=1.0, multi_label=True, lite=False, sep=' '):
         super().__init__()
 
         self.embedder = Text2VecAttentionEmbed(
+            sep=sep,
             tokens={tok: i for i, tok in enumerate(vocab)},
             embedding_size=embedding_size,
             max_sequence_len=max_sequence_len,
