@@ -36,7 +36,7 @@ setup(
     author="Dave Hollander",
     author_url="https://github.com/brainsqueeze",
     url="https://github.com/brainsqueeze/ragged_text_classification",
-    license="BSD 2-Clause License",
+    license="MIT",
     install_requires=[
         "nltk",
         "numpy",
