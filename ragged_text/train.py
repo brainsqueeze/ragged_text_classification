@@ -60,7 +60,11 @@ def svm_platt_train_step(model: tf.keras.Model, opt: tf.keras.optimizers.Optimiz
     # back propagation starting from SVM layer
     with tf.GradientTape() as tape:
         logits = model(inputs, svm_output=True)
-        svm_loss = tf.reduce_mean(tf.keras.losses.hinge(y_true=labels, y_pred=logits))
+        if not model.multi_label:
+            svm_loss = tf.keras.losses.hinge(y_true=labels, y_pred=logits)
+        else:
+            svm_loss = tf.keras.losses.categorical_hinge(y_true=labels, y_pred=logits)
+        svm_loss = tf.reduce_mean(loss)
     gradients = tape.gradient(svm_loss, model.svm_variables)
     opt.apply_gradients(zip(gradients, model.svm_variables))
 
