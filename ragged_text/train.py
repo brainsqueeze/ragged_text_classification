@@ -64,7 +64,7 @@ def svm_platt_train_step(model: tf.keras.Model, opt: tf.keras.optimizers.Optimiz
             svm_loss = tf.keras.losses.hinge(y_true=labels, y_pred=logits)
         else:
             svm_loss = tf.keras.losses.categorical_hinge(y_true=labels, y_pred=logits)
-        svm_loss = tf.reduce_mean(loss)
+        svm_loss = tf.reduce_mean(svm_loss)
     gradients = tape.gradient(svm_loss, model.svm_variables)
     opt.apply_gradients(zip(gradients, model.svm_variables))
 
