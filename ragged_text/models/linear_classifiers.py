@@ -1,12 +1,9 @@
 import tensorflow as tf
 from text2vec.models import Tokenizer
 
+from ragged_text.layers import Inception
 from ragged_text.layers.dense import LinearSvmPlatt
-from ragged_text.layers.word_embed import WordEmbedding
-from ragged_text.layers.conv import ConvNgram
 from ragged_text.layers.sequence import Text2VecAttentionEmbed
-
-from ragged_text import map_ragged_time_sequences
 
 
 class ConvGramClassifier(tf.keras.Model):
@@ -41,18 +38,14 @@ class ConvGramClassifier(tf.keras.Model):
                  n_classes: int, multi_label=False, lite=False, sep=' '):
         super().__init__()
 
-        with tf.name_scope('ConvFeatures'):
-            self.tok = Tokenizer(sep)
-            self.embed = WordEmbedding(vocab=vocab, embedding_size=embedding_size)
-            self.ngram_layers = [
-                ConvNgram(
-                    ngram_size=ng,
-                    output_size=conv_filter_size,
-                    pool_size=pool_size,
-                    embedding_size=embedding_size
-                )
-                for ng in ngrams
-            ]
+        self.embedder = Inception(
+            vocab=vocab,
+            embedding_size=embedding_size,
+            conv_filter_size=conv_filter_size,
+            ngrams=ngrams,
+            pool_size=pool_size,
+            sep=sep
+        )
 
         with tf.name_scope('Classifier'):
             self.classifier = LinearSvmPlatt(
@@ -62,22 +55,11 @@ class ConvGramClassifier(tf.keras.Model):
                 lite=lite
             )
 
-    def feature_forward(self, documents):
-        tokens = self.embed(self.tok(documents))
-        x = []
-        for feature_layer in self.ngram_layers:
-            x_ = map_ragged_time_sequences(feature_layer, tokens)
-
-            # add n-grams as vectors
-            x_ = tf.reduce_sum(x_, axis=1)
-            x.append(x_)
-        x = tf.concat(x, axis=-1)
-        return tf.linalg.l2_normalize(x, axis=1)
-
     def call(self, documents, svm_output=False, training=False, **kwargs):
         with tf.name_scope("ConvGramClassifier"):
-            x = self.feature_forward(documents)
-            return self.classifier(x, svm_output=svm_output)
+            X = self.embedder(documents)
+            X = tf.linalg.l2_normalize(X, axis=1)
+            return self.classifier(X, svm_output=svm_output)
 
     @property
     def multi_label(self):
@@ -109,8 +91,6 @@ class ContextClassifier(tf.keras.Model):
         Token embedding dimensionality
     n_classes : int
         Number of class labels
-    conv_filter_size : int
-        Output dimensionality of each of the 1D convolutional layers
     max_sequence_len : int, optional
         Longest sequence seen at training time, by default 512
     input_keep_prob : float, optional
